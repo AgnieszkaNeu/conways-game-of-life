@@ -54,7 +54,7 @@ def initialize_grid(random_distribution=False):
 
 
 start_stop_button = ButtonImage(globals.start_image,500,40,1)
-start_stop_button.set_state("stop")
+start_stop_button.set_state("start")
 
 random_game_button = ButtonImage(globals.random_image,500,140,1)
 
@@ -87,7 +87,7 @@ while running:
 
     draw_grid()
     calculate_next_states()
-    if start_stop_button.state == "start":
+    if start_stop_button.state == "stop":
         update_states()
 
     pygame.display.flip()
