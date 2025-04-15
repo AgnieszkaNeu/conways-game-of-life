@@ -27,10 +27,10 @@ CELL_COLOR = (255, 255, 255)
 
 #Images
 path = os.path.dirname(os.path.abspath(__file__))
-start_image = pygame.image.load( path + "\\images\\START.png")
-stop_image = pygame.image.load( path + "\\images\\STOP.png")
-random_image = pygame.image.load( path + "\\images\\RANDOM.png")
-clear_image = pygame.image.load( path + "\\images\\CLEAR.png")
+start_image = pygame.image.load( path + "\\buttons\\START.png")
+stop_image = pygame.image.load( path + "\\buttons\\STOP.png")
+random_image = pygame.image.load( path + "\\buttons\\RANDOM.png")
+clear_image = pygame.image.load( path + "\\buttons\\CLEAR.png")
 
 
 
