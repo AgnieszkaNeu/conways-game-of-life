@@ -1,65 +1,93 @@
 import pygame
 import random
 from button import ButtonImage
-import globals
-import gameOfLife
+from gameOfLife import Individual, Game
+import os
 
 
-pygame.init()
-screen = pygame.display.set_mode((globals.WINDOW_WIDTH, globals.WINDOW_HEIGHT))
-clock = pygame.time.Clock()
-running = True
+WINDOW_WIDTH = 1024
+WINDOW_HEIGHT = 768
+SPEED = 10
 
-grid = [[0 for x in range(globals.DIMENSION)] for y in range(globals.DIMENSION)]
+#Grid
+CELL_SIZE = 25
+DIMENSION = 30
+START_GRID = 10
+
+#Buttons position
+IMAGE_POS_X = 800
+IMAGE_POS_Y = 40
+SPACE_BETWEEN_BUTTONS = 100
 
 
-def draw_grid():
+#Colors
+BACKGROUND_COLOR = (20, 18, 36)
+GRID_COLOR =(71, 71, 71)
+CELL_COLOR = (255, 255, 255)
 
-    for row in range(globals.DIMENSION):
-        for col in range(globals.DIMENSION):
+#Images
+path = os.path.dirname(os.path.abspath(__file__))
+start_image = pygame.image.load( path + "\\images\\START.png")
+stop_image = pygame.image.load( path + "\\images\\STOP.png")
+random_image = pygame.image.load( path + "\\images\\RANDOM.png")
+clear_image = pygame.image.load( path + "\\images\\CLEAR.png")
 
-            rect = pygame.Rect(col*globals.CELL_SIZE + globals.START_GRID,
-                               row*globals.CELL_SIZE + globals.START_GRID,
-                               globals.CELL_SIZE,globals.CELL_SIZE)
-            
+
+
+
+def draw_grid(surface):
+
+    for row in range(DIMENSION):
+        for col in range(DIMENSION):
             if grid[row][col].is_alive:
-                pygame.draw.rect(screen,"white",rect)
-            pygame.draw.rect(screen, "gray20", rect, 1)
-
-
-def calculate_next_states():
-    for row in range(globals.DIMENSION):
-        for col in range(globals.DIMENSION):
-            gameOfLife.check_neighbours(grid[row][col], grid)
-
-
-def update_states():
-    for row in range(globals.DIMENSION):
-        for col in range(globals.DIMENSION):
-            grid[row][col].update_state()
+                pygame.draw.rect(surface,CELL_COLOR, grid[row][col].rect)
+            pygame.draw.rect(surface, GRID_COLOR, grid[row][col].rect, 1)
 
 
 def initialize_grid(random_distribution=False):
     global grid
     
-    for row in range(globals.DIMENSION):
-        for col in range(globals.DIMENSION):
+    for row in range(DIMENSION):
+        for col in range(DIMENSION):
+
+            rect = pygame.Rect(col*CELL_SIZE + START_GRID, 
+                                    row*CELL_SIZE + START_GRID,
+                                    CELL_SIZE,CELL_SIZE)
+            
             if random_distribution:
                 random_state = random.choices([True,False], weights=[1,10])[0]
-                individual = gameOfLife.Individual(random_state,row,col)
+                individual = Individual(random_state,row,col,rect)
             else:
-                individual = gameOfLife.Individual(False,row,col)
+                individual = Individual(False,row,col,rect)
 
             grid[row][col] = individual
 
 
-start_stop_button = ButtonImage(globals.start_image,500,40,1)
+def is_within_grid(mouse_pos):
+    stop_grid = DIMENSION * CELL_SIZE + START_GRID  
+    return (START_GRID <= mouse_pos[0] <= stop_grid) and (START_GRID <= mouse_pos[1] <= stop_grid) 
+
+
+screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+clock = pygame.time.Clock()
+running = True
+grid = [[0 for x in range(DIMENSION)] for y in range(DIMENSION)]
+
+start_stop_button = ButtonImage(start_image,IMAGE_POS_X,IMAGE_POS_Y,1)
 start_stop_button.set_state("start")
+random_game_button = ButtonImage( random_image,IMAGE_POS_X, IMAGE_POS_Y+SPACE_BETWEEN_BUTTONS, 1)
+clear_button = ButtonImage( clear_image, IMAGE_POS_X, IMAGE_POS_Y+2*SPACE_BETWEEN_BUTTONS, 1)
 
-random_game_button = ButtonImage(globals.random_image,500,140,1)
-
+game = Game(DIMENSION)
+pygame.init()
 initialize_grid()
+
+
 while running:
+
+    if start_stop_button.state == "stop":
+        game.check_next_states(grid)
+        game.update_states(grid)
 
     for event in pygame.event.get():
 
@@ -72,25 +100,31 @@ while running:
             if start_stop_button.rect.collidepoint(mouse_pos):
 
                 if start_stop_button.state == "start":
-                    start_stop_button.set_state("stop", globals.stop_image)
+                    start_stop_button.set_state("stop", stop_image)
                 elif start_stop_button.state == "stop":
-                    start_stop_button.set_state("start", globals.start_image)  
+                    start_stop_button.set_state("start", start_image)  
 
-            if random_game_button.rect.collidepoint(mouse_pos):
+            elif random_game_button.rect.collidepoint(mouse_pos):
                 initialize_grid(random_distribution = True)
 
+            elif clear_button.rect.collidepoint(mouse_pos):
+                initialize_grid()
 
-    screen.fill("black")
+            elif  is_within_grid(mouse_pos):
+                x = (mouse_pos[0] - 10) // CELL_SIZE
+                y = (mouse_pos[1] - 10) // CELL_SIZE
+                if grid[y][x].rect.collidepoint(mouse_pos):
+                    grid[y][x].is_alive = not grid[y][x].is_alive
 
+
+    ### Draw components
+    screen.fill(BACKGROUND_COLOR)
+    draw_grid(screen) 
     start_stop_button.draw_button(screen)
     random_game_button.draw_button(screen)
-
-    draw_grid()
-    calculate_next_states()
-    if start_stop_button.state == "stop":
-        update_states()
+    clear_button.draw_button(screen)
 
     pygame.display.flip()
-    clock.tick(globals.SPEED)  
+    clock.tick(SPEED)  
 
 pygame.quit()
