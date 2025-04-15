@@ -10,7 +10,7 @@ A visual and interactive simulation of Conway's Game of Life built with Python a
   - A dead cell with exactly 3 live neighbors becomes alive
   - All other cells die or remain dead
 - Use the **Start/Stop** and **Random** buttons to control the simulation
-
+- Click on the grid to set or remove live cells
 ## 📷 Demo
 
 ![Demo GIF](demo.gif)  
